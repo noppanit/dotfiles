@@ -20,6 +20,11 @@
   nix-homebrew = {
     enable = true;
     inherit user;
+    # This machine already had a standalone Homebrew install at /opt/homebrew.
+    # autoMigrate lets nix-homebrew adopt it: it replaces the git-managed
+    # Homebrew core with a nix-managed one, but keeps every already-installed
+    # formula/cask in place.
+    autoMigrate = true;
   };
   homebrew = {
     enable = true;
