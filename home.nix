@@ -34,6 +34,7 @@ in
       ls = "ls -G";
       ll = "ls -lhG";
       la = "ls -lahG";
+      cc = "claude --dangerously-skip-permissions";
     };
     initContent = ''
       # rbenv
