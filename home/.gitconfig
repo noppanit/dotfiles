@@ -1,0 +1,32 @@
+[user]
+	name = Noppanit Charassinvichai
+	email = noppanit.c@gmail.com
+
+[alias]
+	  pu = !"git fetch origin -v; git fetch upstream -v; git merge upstream/master"
+		ci = commit
+		st = status -sb
+		br = branch
+		co = checkout
+		df = diff
+		hi = log --pretty=oneline
+		lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+[filter "lfs"]
+	clean = git-lfs clean %f
+	smudge = git-lfs smudge %f
+	required = true
+[push]
+	default = current
+	followTags = true
+[core]
+	editor = /usr/bin/vim
+	ignorecase = false
+[color]
+	status = always
+	diff = always
+	log = always
+	ui = true
+[branch "master"]
+	rebase = true
+[branch]
+	autosetuprebase = always
