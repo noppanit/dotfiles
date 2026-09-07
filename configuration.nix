@@ -58,6 +58,8 @@
     ];
     casks = [
       "wezterm"
+      "claude-code" # Claude Code CLI, https://claude.com/product/claude-code
+      "codex"       # OpenAI Codex CLI, https://github.com/openai/codex
     ];
   };
 }
