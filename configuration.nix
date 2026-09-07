@@ -29,6 +29,7 @@
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;
+    onActivation.upgrade = true;
     # Deliberately no onActivation.cleanup = "zap" here. That setting removes
     # any brew package/cask not listed below on every switch. Turn it on once
     # you've confirmed the lists below are the complete, correct set you want.
