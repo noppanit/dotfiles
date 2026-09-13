@@ -1,4 +1,4 @@
-{ config, pkgs, user, ... }:
+{ config, lib, pkgs, user, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -65,4 +65,11 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
   home.file.".pi/agent/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/settings.json";
+
+  # google-colab-cli isn't packaged in nixpkgs or Homebrew, so keep it
+  # installed/updated via uv on every switch instead.
+  # https://github.com/googlecolab/google-colab-cli
+  home.activation.installColabCli = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run /opt/homebrew/bin/uv tool install --upgrade google-colab-cli
+  '';
 }

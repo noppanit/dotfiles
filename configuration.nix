@@ -13,6 +13,11 @@
   };
   system.stateVersion = 6;
 
+  # Let Touch ID authenticate `sudo` (so `./rebuild.sh` doesn't need a typed
+  # password). Note: Touch ID still can't authenticate over SSH or inside
+  # tmux/screen, so a password prompt is the fallback there.
+  security.pam.services.sudo_local.touchIdAuth = true;
+
   # Deliberately no system.defaults block: this repo mirrors this Mac as it
   # already is, not a fresh opinionated setup. Add entries here if you want
   # Nix to start managing specific macOS UI defaults (dark mode, dock, etc).
@@ -61,6 +66,8 @@
       "wezterm"
       "claude-code" # Claude Code CLI, https://claude.com/product/claude-code
       "codex"       # OpenAI Codex CLI, https://github.com/openai/codex
+      "blender"     # 3D creation suite, https://www.blender.org
+      "openwhispr"  # free/open-source local speech-to-text with global hotkey, https://openwhispr.com
     ];
   };
 }
