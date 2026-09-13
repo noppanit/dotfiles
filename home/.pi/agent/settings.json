@@ -1,0 +1,13 @@
+{
+  "packages": ["npm:@cad0p/pi-fallback-provider"],
+  "enabledModels": ["*codex*", "claude-opus-*", "grok-*"],
+  "retry": {
+    "enabled": true,
+    "provider": {
+      "maxRetries": 0
+    }
+  },
+  "warnings": {
+    "anthropicExtraUsage": true
+  }
+}
