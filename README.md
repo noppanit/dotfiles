@@ -140,30 +140,38 @@ than set up a fresh opinionated one:
 
 `home/.pi/agent/settings.json` is symlinked to `~/.pi/agent/settings.json` the same way the dotfiles
 above are - edit it here, `./rebuild.sh` isn't needed for changes to take effect (Pi reads it fresh each
-launch). It configures model selection only:
+launch). It configures model selection and automatic fallback:
 
-- `enabledModels` lists three quick-switch targets for `Ctrl+P` model cycling inside Pi: an OpenAI Codex
-  model, a Claude Opus model, and a Grok model (matched by glob, so it survives dated model-ID bumps in
-  Pi's catalog).
+- `packages` installs [`@cad0p/pi-fallback-provider`](https://github.com/cad0p/pi-fallback-provider), a
+  third-party Pi extension: when the agent ends a turn with an error (quota, rate limit, etc.) and stays
+  quiet for 20s - long enough for Pi's own same-provider retry to give up first - it automatically cycles
+  to the next model in `enabledModels` and sends `continue` so the agent picks up where it left off. No
+  extra config needed; it walks the `enabledModels` list below in order. Manual commands: `/cycle-model`
+  to force a switch, `/fallback-refresh` to resync. Pi installs missing packages on next launch;
+  if it doesn't, run `pi install npm:@cad0p/pi-fallback-provider` once.
+  It's a small, single-maintainer package (MIT, ~3 GitHub stars at time of writing) - I read through its
+  source before adding it, but Pi extensions run with full system access, same as any other npm package
+  you'd install, so it's worth knowing that going in.
+- `enabledModels` lists three quick-switch targets for `Ctrl+P` model cycling (and the fallback order
+  above): an OpenAI Codex model, a Claude Opus model, and a Grok model (matched by glob, so it survives
+  dated model-ID bumps in Pi's catalog).
 - `retry.provider.maxRetries` is pinned to `0` so a provider/SDK-level retry never silently absorbs a
-  quota/rate-limit error before you (or, later, an extension) get a chance to react to it. Pi's own
-  agent-level retry (`retry.enabled`) still backs off and retries transient errors automatically.
+  quota/rate-limit error before the fallback extension (or you) gets a chance to react to it. Pi's own
+  agent-level retry (`retry.enabled`) still backs off and retries transient errors automatically first.
 - `warnings.anthropicExtraUsage` stays on, since Claude access here goes through Pro/Max subscription
   auth billed as pay-per-token "extra usage", not a plan-limit allowance.
 
-**What this does *not* do:** Pi has no built-in "auto-switch provider when the active one hits its
-quota" behavior - only same-provider retry/backoff. Getting Codex-by-default-with-automatic-fallback
-requires a small custom extension (e.g. reacting to `after_provider_response` / a 429 and calling
-`setModel`); Pi ships a `handoff.ts` example (cross-provider model handoff) and a `plan-mode/` /
-`preset.ts` example (per-mode model + tool presets, useful for a distinct "planning" role) under
-`examples/extensions/` in the [Pi repo](https://github.com/earendil-works/pi) as a starting point.
-Building that extension (plus things like a web-search tool) is intentionally left for later - not
-scaffolded here.
+**What this does *not* do:** there's still no separate "planning" model/role - Pi has no built-in
+concept of one. Pi ships a `plan-mode/` / `preset.ts` example (per-mode model + tool presets) under
+`examples/extensions/` in the [Pi repo](https://github.com/earendil-works/pi) if you want to build that
+later; for now, switch to Claude Opus by hand with `Ctrl+P` when you want it for planning. A web-search
+tool is likewise left for you to add.
 
 **One-time manual setup**, after `./rebuild.sh` applies the settings file (OAuth logins can't be
 scripted, so this part isn't automatic):
 
-1. Launch `pi`.
+1. Launch `pi`. It should install `@cad0p/pi-fallback-provider` on first run since it's now declared in
+   settings; `pi list` confirms, `pi install npm:@cad0p/pi-fallback-provider` forces it if not.
 2. `/login` → **ChatGPT Plus/Pro (Codex)** → sign in. This is the default build model.
 3. `/login` → **Claude Pro/Max** → sign in. Pi supports Anthropic subscription auth directly (billed as
    extra usage past your plan's included limits) - no separate Anthropic API key needed.
@@ -171,8 +179,8 @@ scripted, so this part isn't automatic):
 5. `/model`, pick the Codex model, press `Ctrl+S` to persist it as the startup default (this writes
    `defaultProvider`/`defaultModel` into the same settings file with whatever the live catalog's exact
    model ID is - deliberately not hand-typed here, since Pi's model IDs shift over time).
-6. Use `Ctrl+P` to cycle to Claude Opus or Grok by hand when Codex hits a quota wall, or for planning,
-   until the auto-fallback extension above exists.
+6. From here, quota errors on Codex should auto-fall-back to Claude Opus/Grok on their own. Use
+   `Ctrl+P` to switch by hand any time, including to Opus for planning.
 
 ## Notes
 
