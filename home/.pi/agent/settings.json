@@ -2,10 +2,12 @@
   "packages": [
     "npm:@cad0p/pi-fallback-provider"
   ],
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
   "enabledModels": [
     "gpt-*",
-    "claude-opus-*",
     "claude-sonnet-*",
+    "claude-opus-*",
     "claude-fable-*",
     "grok-*"
   ],
