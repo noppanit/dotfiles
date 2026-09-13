@@ -5,6 +5,8 @@
   "enabledModels": [
     "gpt-*",
     "claude-opus-*",
+    "claude-sonnet-*",
+    "claude-fable-*",
     "grok-*"
   ],
   "retry": {
