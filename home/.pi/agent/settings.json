@@ -1,0 +1,12 @@
+{
+  "enabledModels": ["*codex*", "claude-opus-*", "grok-*"],
+  "retry": {
+    "enabled": true,
+    "provider": {
+      "maxRetries": 0
+    }
+  },
+  "warnings": {
+    "anthropicExtraUsage": true
+  }
+}

@@ -13,6 +13,8 @@ Running the switch builds:
 - Homebrew apps: this machine's existing formulae (unchanged), plus WezTerm, herdr, and the Pi coding
   agent
 - Nix user packages (ripgrep, fd, fzf, jq, lazygit, Neovim, Hack Nerd Font)
+- Pi coding agent model setup: OpenAI Codex, Claude Opus, and Grok wired up for quick manual
+  switching (see [Pi coding agent](#pi-coding-agent) below)
 - Shell (zsh + oh-my-zsh, `robbyrussell` theme, `git` plugin, existing aliases)
 - Editor (fresh Neovim config: lazy.nvim, treesitter, telescope, neo-tree, gitsigns, tokyonight)
 - Terminal (WezTerm config, tokyonight color scheme, dimmed unfocused panes)
@@ -121,15 +123,56 @@ than set up a fresh opinionated one:
    `~/.gitconfig`, `~/.vimrc`, and `~/.tmux.conf`; without this setting the first switch fails instead
    of adopting them. With it, home-manager renames each pre-existing file to `<name>.hm-backup` before
    symlinking its own.
-4. **No opinionated `~/.pi/agent` or `~/.config/herdr` content.** The reference pins two specific
-   third-party Pi npm packages and ships a personal theme/extension - that's the original author's own
-   audited choice, not something to carry over blind. `pi-coding-agent` and `herdr` are installed here,
-   but their runtime config is left to their own defaults on first run, aside from a small
-   `home/.config/herdr/config.toml` with keybindings that match this repo's tmux prefix.
+4. **No opinionated `~/.config/herdr` content beyond keybindings.** The reference ships a personal
+   theme/extension for `herdr` - that's the original author's own audited choice, not something to
+   carry over blind. `herdr` is installed here with just a small `home/.config/herdr/config.toml` for
+   keybindings that match this repo's tmux prefix, left otherwise at its defaults.
+   `~/.pi/agent/settings.json` for the Pi coding agent *is* managed here (model selection only) - see
+   [Pi coding agent](#pi-coding-agent) below - but everything else under `~/.pi/agent/` (auth tokens,
+   the cached model catalog, project trust decisions, extensions) is still left alone: those are either
+   secrets or pure machine/session state that don't belong in a git repo.
 5. **No Claude/Codex/opencode `AGENTS.md` symlinks, no `~/.claude/settings.json` management.** Out of
    scope for this repo; those are managed separately.
 6. **Neovim config is authored fresh** for this repo (lazy.nvim, treesitter, telescope, neo-tree,
    gitsigns, tokyonight) rather than copied from the reference.
+
+## Pi coding agent
+
+`home/.pi/agent/settings.json` is symlinked to `~/.pi/agent/settings.json` the same way the dotfiles
+above are - edit it here, `./rebuild.sh` isn't needed for changes to take effect (Pi reads it fresh each
+launch). It configures model selection only:
+
+- `enabledModels` lists three quick-switch targets for `Ctrl+P` model cycling inside Pi: an OpenAI Codex
+  model, a Claude Opus model, and a Grok model (matched by glob, so it survives dated model-ID bumps in
+  Pi's catalog).
+- `retry.provider.maxRetries` is pinned to `0` so a provider/SDK-level retry never silently absorbs a
+  quota/rate-limit error before you (or, later, an extension) get a chance to react to it. Pi's own
+  agent-level retry (`retry.enabled`) still backs off and retries transient errors automatically.
+- `warnings.anthropicExtraUsage` stays on, since Claude access here goes through Pro/Max subscription
+  auth billed as pay-per-token "extra usage", not a plan-limit allowance.
+
+**What this does *not* do:** Pi has no built-in "auto-switch provider when the active one hits its
+quota" behavior - only same-provider retry/backoff. Getting Codex-by-default-with-automatic-fallback
+requires a small custom extension (e.g. reacting to `after_provider_response` / a 429 and calling
+`setModel`); Pi ships a `handoff.ts` example (cross-provider model handoff) and a `plan-mode/` /
+`preset.ts` example (per-mode model + tool presets, useful for a distinct "planning" role) under
+`examples/extensions/` in the [Pi repo](https://github.com/earendil-works/pi) as a starting point.
+Building that extension (plus things like a web-search tool) is intentionally left for later - not
+scaffolded here.
+
+**One-time manual setup**, after `./rebuild.sh` applies the settings file (OAuth logins can't be
+scripted, so this part isn't automatic):
+
+1. Launch `pi`.
+2. `/login` → **ChatGPT Plus/Pro (Codex)** → sign in. This is the default build model.
+3. `/login` → **Claude Pro/Max** → sign in. Pi supports Anthropic subscription auth directly (billed as
+   extra usage past your plan's included limits) - no separate Anthropic API key needed.
+4. `/login xai` → **Use a subscription** (or an `XAI_API_KEY`) if you want Grok in the mix too.
+5. `/model`, pick the Codex model, press `Ctrl+S` to persist it as the startup default (this writes
+   `defaultProvider`/`defaultModel` into the same settings file with whatever the live catalog's exact
+   model ID is - deliberately not hand-typed here, since Pi's model IDs shift over time).
+6. Use `Ctrl+P` to cycle to Claude Opus or Grok by hand when Codex hits a quota wall, or for planning,
+   until the auto-fallback extension above exists.
 
 ## Notes
 
