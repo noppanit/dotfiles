@@ -1,6 +1,12 @@
 {
-  "packages": ["npm:@cad0p/pi-fallback-provider"],
-  "enabledModels": ["*codex*", "claude-opus-*", "grok-*"],
+  "packages": [
+    "npm:@cad0p/pi-fallback-provider"
+  ],
+  "enabledModels": [
+    "gpt-*",
+    "claude-opus-*",
+    "grok-*"
+  ],
   "retry": {
     "enabled": true,
     "provider": {
@@ -9,5 +15,7 @@
   },
   "warnings": {
     "anthropicExtraUsage": true
-  }
+  },
+  "lastChangelogVersion": "0.85.1",
+  "theme": "dark"
 }
